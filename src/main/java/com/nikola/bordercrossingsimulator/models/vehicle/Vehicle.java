@@ -25,6 +25,8 @@ public abstract class Vehicle extends Thread implements Serializable {
     private static final Semaphore binaryLoggingSemaphore = new Semaphore(1);
 
     protected final ArrayList<Passenger> rejectedPassengers = new ArrayList<>();
+    private Terminal policeTerminal;
+    private Terminal customsTerminal;
 
     private static int vehicleCounter = 1;
     private final int vehicleId;
@@ -84,16 +86,16 @@ public abstract class Vehicle extends Thread implements Serializable {
     }
 
     private void passPoliceTerminal() {
-        Terminal terminal = Simulation.tryGetPoliceTerminal(this);
+        policeTerminal = Simulation.tryGetPoliceTerminal(this);
         crossingLog = new StringBuilder();
 
-        if(terminal != null){
-            Platform.runLater(()->simulationController.updatePoliceTerminal(this, terminal));
+        if(policeTerminal != null){
+            Platform.runLater(()->simulationController.updatePoliceTerminal(this, policeTerminal));
 
             travelState = TravelState.UNDER_INSPECTION;
             Simulation.removeFromLane(this);
 
-            crossingLog.append(typeToString()).append(" ").append(vehicleId).append(" on police terminal [").append(terminal.getTerminalId()).append("] ");
+            crossingLog.append(typeToString()).append(" ").append(vehicleId).append(" on police terminal [").append(policeTerminal.getTerminalId()).append("] ");
             if(inspectPolice()){
                 crossingLog.append("passed police inspection with passengers: ");
                 passengers.forEach((passenger) ->  crossingLog.append(" ").append(passenger.getPassengerId()).append(" "));
@@ -103,13 +105,11 @@ public abstract class Vehicle extends Thread implements Serializable {
                 crossingLog.append("failed police inspection.\n");
                 travelState = TravelState.REJECTED;
                 Simulation.addToRejected(this);
+                Platform.runLater(()-> simulationController.resetPoliceTerminal(policeTerminal));
+                policeTerminal.setOccupied(false);
             }
-            logCrossingReport(rejectedPassengers, terminal, true);
-            Platform.runLater(()-> simulationController.resetPoliceTerminal(terminal));
+            logCrossingReport(rejectedPassengers, policeTerminal, true);
             Platform.runLater(()-> simulationController.updateLog(String.valueOf(crossingLog)));
-            terminal.setOccupied(false);
-
-
 
         }
     }
@@ -117,12 +117,15 @@ public abstract class Vehicle extends Thread implements Serializable {
 
 
     private void passCustomsTerminal() {
-        Terminal terminal = Simulation.tryGetCustomsTerminal(this);
+        customsTerminal = Simulation.tryGetCustomsTerminal(this);
         crossingLog = new StringBuilder();
-        if(terminal != null){
-            Platform.runLater(()->simulationController.updateCustomsTerminal(this, terminal));
+        if(customsTerminal != null){
+            Platform.runLater(()-> simulationController.resetPoliceTerminal(policeTerminal));
+            policeTerminal.setOccupied(false);
+
+            Platform.runLater(()->simulationController.updateCustomsTerminal(this, customsTerminal));
             travelState = TravelState.UNDER_INSPECTION;
-            crossingLog.append(typeToString()).append(" ").append(vehicleId).append(" on customs terminal [").append(terminal.getTerminalId()).append("] ");
+            crossingLog.append(typeToString()).append(" ").append(vehicleId).append(" on customs terminal [").append(customsTerminal.getTerminalId()).append("] ");
             if(inspectCustoms()){
                 crossingLog.append("passed customs inspection with passengers: ");
                 passengers.forEach((passenger) ->  crossingLog.append(" ").append(passenger.getPassengerId()).append(" "));
@@ -138,10 +141,10 @@ public abstract class Vehicle extends Thread implements Serializable {
 
                 Simulation.addToRejected(this);
             }
-            logCrossingReport(rejectedPassengers, terminal, false);
-            Platform.runLater(()-> simulationController.resetCustomsTerminal(terminal));
+            logCrossingReport(rejectedPassengers, customsTerminal, false);
+            Platform.runLater(()-> simulationController.resetCustomsTerminal(customsTerminal));
             Platform.runLater(()-> simulationController.updateLog(String.valueOf(crossingLog)));
-            terminal.setOccupied(false);
+            customsTerminal.setOccupied(false);
 
 
 
@@ -265,5 +268,10 @@ public abstract class Vehicle extends Thread implements Serializable {
 
     public TerminalCategory getVehicleCategory() {
         return vehicleCategory;
+    }
+
+    @Override
+    public String toString() {
+        return typeToString() + "["+ vehicleId+"] " + travelState + " with passengers: " + passengers.toString();
     }
 }

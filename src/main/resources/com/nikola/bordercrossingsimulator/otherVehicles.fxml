@@ -3,8 +3,7 @@
 <?import javafx.scene.control.ListView?>
 <?import javafx.scene.layout.AnchorPane?>
 
-
-<AnchorPane maxHeight="200.0" minHeight="150.0" minWidth="600.0" prefHeight="150.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/20.0.1" xmlns:fx="http://javafx.com/fxml/1" >
+<AnchorPane maxHeight="200.0" minHeight="150.0" minWidth="600.0" prefHeight="150.0" prefWidth="600.0" stylesheets="@style.css" xmlns="http://javafx.com/javafx/20.0.1" xmlns:fx="http://javafx.com/fxml/1">
    <children>
       <ListView fx:id="vehicleList" layoutY="1.0" maxHeight="300.0" minHeight="300.0" orientation="HORIZONTAL" prefHeight="300.0" prefWidth="600.0" AnchorPane.bottomAnchor="-1.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="1.0" />
    </children>

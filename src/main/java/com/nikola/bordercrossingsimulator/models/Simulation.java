@@ -3,12 +3,11 @@ package com.nikola.bordercrossingsimulator.models;
 import com.nikola.bordercrossingsimulator.Main;
 import com.nikola.bordercrossingsimulator.controllers.SimulationController;
 import com.nikola.bordercrossingsimulator.models.terminal.*;
-import com.nikola.bordercrossingsimulator.models.vehicle.Vehicle;
+import com.nikola.bordercrossingsimulator.models.vehicle.Bus;
 import com.nikola.bordercrossingsimulator.models.vehicle.Car;
 import com.nikola.bordercrossingsimulator.models.vehicle.Truck;
-import com.nikola.bordercrossingsimulator.models.vehicle.Bus;
+import com.nikola.bordercrossingsimulator.models.vehicle.Vehicle;
 import javafx.application.Platform;
-
 
 import java.io.File;
 import java.nio.file.Path;
@@ -21,8 +20,6 @@ import java.util.logging.Level;
 import static java.lang.Thread.sleep;
 
 public class Simulation {
-    public static  int endOfLane = 49;
-
     private final static CopyOnWriteArrayList<Terminal> policeTerminals = new CopyOnWriteArrayList<>();
     private final static CopyOnWriteArrayList<Terminal> customsTerminals = new CopyOnWriteArrayList<>();
     private final static CopyOnWriteArrayList<Vehicle> terminalQueue = new CopyOnWriteArrayList<>();
@@ -30,13 +27,12 @@ public class Simulation {
     private final static ArrayList<Vehicle> passed = new ArrayList<>();
     private static final AtomicBoolean finished = new AtomicBoolean(false);
     private static final CopyOnWriteArrayList<Vehicle> lane = new CopyOnWriteArrayList<>();
-    private static final AtomicBoolean runState = new AtomicBoolean(true);
+    private static final ArrayList<Vehicle> allVehicles = new ArrayList<>();
+    public static int endOfLane = 49;
     private final Path vehiclesTextLogPath;
     private final Path vehiclesBinaryLogPath;
-
     private final SimulationController simulationController;
     private final TerminalStatusWatcher terminalStatusWatcher;
-    private Clock clock;
 
     public Simulation(SimulationController simulationController) {
         this.simulationController = simulationController;
@@ -54,9 +50,12 @@ public class Simulation {
 
     }
 
-    public Path getVehiclesTextLogPath(){return vehiclesTextLogPath;}
     public static boolean isFinished() {
         return finished.get();
+    }
+
+    public static ArrayList<Vehicle> getAllVehicles() {
+        return allVehicles;
     }
 
     public static void tryMove(Vehicle vehicle) {
@@ -86,15 +85,6 @@ public class Simulation {
         }
     }
 
-    /**
-     * Try to find an empty appropriate terminal and return it while setting the occupy flag to true.
-     * Returns null if no appropriate terminal is found
-     * Terminal occupied flag needs to be reset in the caller of this method
-     *
-     * @param vehicle
-     * @return terminal or null
-     */
-
     public static synchronized Terminal tryGetPoliceTerminal(Vehicle vehicle) {
         for (Terminal terminal : policeTerminals) {
             if (terminal.getStatus() && !terminal.isOccupied() && terminal.getTerminalCategory() == vehicle.getVehicleCategory()) {
@@ -105,7 +95,22 @@ public class Simulation {
         return null;
     }
 
-    public static synchronized CopyOnWriteArrayList<Vehicle> getLane(){return lane;}
+    public static synchronized CopyOnWriteArrayList<Vehicle> getLane() {
+        return lane;
+    }
+
+    public static ArrayList<Vehicle> getRejected() {
+        return rejected;
+    }
+
+    public static ArrayList<Vehicle> getPassed() {
+        return passed;
+    }
+
+    public static CopyOnWriteArrayList<Vehicle> getTerminalQueue() {
+        return terminalQueue;
+    }
+
     public static void addToRejected(Vehicle vehicle) {
         synchronized (rejected) {
             rejected.add(vehicle);
@@ -135,26 +140,26 @@ public class Simulation {
         return null;
     }
 
-    public  void changeRunState() {
+    public Path getVehiclesTextLogPath() {
+        return vehiclesTextLogPath;
+    }
+
+    public void changeRunState() {
         Clock.changeState();
         synchronized (lane) {
-         lane.forEach(Vehicle::changeState);
+            lane.forEach(Vehicle::changeState);
         }
     }
 
 
-
     public void start() {
         terminalStatusWatcher.start();
-
         synchronized (lane) {
-            //Platform.runLater(() ->simulationController.setupLane(lane));
-
             for (Vehicle vehicle : lane) {
                 vehicle.start();
             }
         }
-        clock = new Clock(this.simulationController);
+        Clock clock = new Clock(this.simulationController);
 
         clock.start();
         System.out.println(lane.size());
@@ -165,7 +170,7 @@ public class Simulation {
     public void run() {
 
         while (!finished.get()) {
-          Platform.runLater(simulationController::updateGui);
+            Platform.runLater(simulationController::updateGui);
 
             try {
                 sleep(100);
@@ -199,7 +204,7 @@ public class Simulation {
     private void initVehicles() {
 
         for (int i = 0; i < 35; ++i) {
-            lane.add(new Car(vehiclesTextLogPath, vehiclesBinaryLogPath,  simulationController));
+            lane.add(new Car(vehiclesTextLogPath, vehiclesBinaryLogPath, simulationController));
         }
         for (int i = 0; i < 10; ++i) {
             lane.add(new Truck(vehiclesTextLogPath, vehiclesBinaryLogPath, simulationController));
@@ -211,5 +216,6 @@ public class Simulation {
         for (int i = 0; i < 50; ++i) {
             lane.get(i).setPosition(i);
         }
+        allVehicles.addAll(lane);
     }
 }

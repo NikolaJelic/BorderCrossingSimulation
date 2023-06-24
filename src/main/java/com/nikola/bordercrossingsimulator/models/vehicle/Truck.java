@@ -2,15 +2,13 @@ package com.nikola.bordercrossingsimulator.models.vehicle;
 
 import com.nikola.bordercrossingsimulator.Main;
 import com.nikola.bordercrossingsimulator.controllers.SimulationController;
-import com.nikola.bordercrossingsimulator.models.passenger.Passenger;
 import com.nikola.bordercrossingsimulator.models.terminal.TerminalCategory;
 import com.nikola.bordercrossingsimulator.models.transportable.Cargo;
 
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.logging.Level;
 
-public class Truck extends Vehicle{
+public class Truck extends Vehicle {
     private final Cargo cargo;
 
     public Truck(Path bannedPassengersLogPath, Path vehiclesBinaryLogPath, SimulationController simulationController) {
@@ -25,9 +23,9 @@ public class Truck extends Vehicle{
         } catch (InterruptedException e) {
             Main.logger.log(Level.WARNING, e.getMessage());
         }
-        if(cargo.canPassInspection()){
+        if (cargo.canPassInspection()) {
             return true;
-        }else{
+        } else {
             rejectedPassengers.add(passengers.get(0));
             return false;
         }

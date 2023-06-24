@@ -14,12 +14,12 @@ public class Car extends Vehicle {
 
     @Override
     public boolean inspectCustoms() {
-            try {
-                sleep(2000);
-            } catch (Exception e) {
-                Main.logger.log(Level.WARNING, e.fillInStackTrace().toString());
-            }
-            return true;
+        try {
+            sleep(2000);
+        } catch (Exception e) {
+            Main.logger.log(Level.WARNING, e.fillInStackTrace().toString());
+        }
+        return true;
     }
 
 

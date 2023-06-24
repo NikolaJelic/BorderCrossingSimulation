@@ -16,5 +16,7 @@ public class CustomsDocumentation {
         }
     }
 
-    public boolean isValidDocumentation(){ return realWeight <= declaredWeight;}
+    public boolean isValidDocumentation() {
+        return realWeight <= declaredWeight;
+    }
 }

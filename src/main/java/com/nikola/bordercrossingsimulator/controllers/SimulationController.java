@@ -4,7 +4,6 @@ package com.nikola.bordercrossingsimulator.controllers;
 import com.nikola.bordercrossingsimulator.Main;
 import com.nikola.bordercrossingsimulator.models.Simulation;
 import com.nikola.bordercrossingsimulator.models.terminal.Terminal;
-import com.nikola.bordercrossingsimulator.models.terminal.TerminalCategory;
 import com.nikola.bordercrossingsimulator.models.vehicle.Vehicle;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
@@ -15,12 +14,15 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
+import javafx.scene.control.TextField;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 
@@ -46,12 +48,13 @@ public class SimulationController {
     @FXML
     public Label customsSecondLabel;
     public Button finishedButton;
-    private Simulation simulation;
-
+    public TextField searchInputField;
+    public Text vehicleInfo;
     OtherVehiclesController otherVehiclesController = new OtherVehiclesController();
     ProblemVehiclesController problemVehiclesController;
+    private Simulation simulation;
 
-    public synchronized void updateLog(String log){
+    public synchronized void updateLog(String log) {
         String previous = crossingLog.getText();
         String add = previous + '\n' + log;
         crossingLog.setText(add);
@@ -61,7 +64,7 @@ public class SimulationController {
     public void showAllVehicles(ActionEvent actionEvent) {
         try {
 
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/nikola/bordercrossingsimulator/otherVehicles.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource(File.separator +  "com" +File.separator + "nikola"+File.separator +"bordercrossingsimulator"+File.separator +"otherVehicles.fxml"));
             loader.setController(otherVehiclesController);
             Parent root = loader.load();
             Stage stage = new Stage();
@@ -69,7 +72,7 @@ public class SimulationController {
             stage.setScene(new Scene(root, 600, 150));
             stage.setResizable(false);
             stage.show();
-        }catch (Exception e){
+        } catch (Exception e) {
             Main.logger.log(Level.WARNING, e.getMessage());
         }
     }
@@ -82,10 +85,10 @@ public class SimulationController {
         List<Vehicle> vLane = new ArrayList<>(lane.subList(startIndex, endIndex));
         visibleLane.getItems().clear();
         ArrayList<Vehicle> others = new ArrayList<>(lane.subList(0, startIndex));
-        Platform.runLater(() ->otherVehiclesController.updateList(others));
+        Platform.runLater(() -> otherVehiclesController.updateList(others));
         vLane.forEach(vehicle -> {
-            Label l = new Label(vehicle.typeToString() + "[" + vehicle.getVehicleId()+ "]");
-            Color textColor = switch (vehicle.typeToString()){
+            Label l = new Label(vehicle.typeToString() + "[" + vehicle.getVehicleId() + "]");
+            Color textColor = switch (vehicle.typeToString()) {
                 case "Car" -> Color.RED;
                 case "Bus" -> Color.BLUE;
                 case "Truck" -> Color.GREEN;
@@ -96,6 +99,7 @@ public class SimulationController {
         });
 
     }
+
     public void updateTime(long time) {
         elapsedTime.setText(String.valueOf(time));
     }
@@ -114,7 +118,8 @@ public class SimulationController {
             System.out.println(e.getMessage());
         }
     }
-    public synchronized void updatePoliceTerminal(Vehicle vehicle, Terminal terminal){
+
+    public synchronized void updatePoliceTerminal(Vehicle vehicle, Terminal terminal) {
         switch (terminal.getTerminalId()) {
             case 1 -> policeFirstLabel.setText((vehicle.typeToString() + "[" + vehicle.getVehicleId() + "]"));
             case 2 -> policeSecondLabel.setText((vehicle.typeToString() + "[" + vehicle.getVehicleId() + "]"));
@@ -122,7 +127,7 @@ public class SimulationController {
         }
     }
 
-    public synchronized void resetPoliceTerminal(Terminal terminal){
+    public synchronized void resetPoliceTerminal(Terminal terminal) {
         switch (terminal.getTerminalId()) {
             case 1 -> policeFirstLabel.setText("");
             case 2 -> policeSecondLabel.setText("");
@@ -130,14 +135,14 @@ public class SimulationController {
         }
     }
 
-    public synchronized void updateCustomsTerminal(Vehicle vehicle, Terminal terminal){
+    public synchronized void updateCustomsTerminal(Vehicle vehicle, Terminal terminal) {
         switch (terminal.getTerminalId()) {
             case 1 -> customsFirstLabel.setText((vehicle.typeToString() + "[" + vehicle.getVehicleId() + "]"));
             case 2 -> customsSecondLabel.setText((vehicle.typeToString() + "[" + vehicle.getVehicleId() + "]"));
         }
     }
 
-    public synchronized void resetCustomsTerminal(Terminal terminal){
+    public synchronized void resetCustomsTerminal(Terminal terminal) {
         switch (terminal.getTerminalId()) {
             case 1 -> customsFirstLabel.setText("");
             case 2 -> customsSecondLabel.setText("");
@@ -147,7 +152,7 @@ public class SimulationController {
     public void showFinished(ActionEvent actionEvent) {
         try {
             problemVehiclesController = new ProblemVehiclesController(simulation.getVehiclesTextLogPath());
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/nikola/bordercrossingsimulator/problemVehicles.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource( File.separator +  "com" +File.separator + "nikola"+File.separator +"bordercrossingsimulator"+File.separator +"problemVehicles.fxml"));
             loader.setController(problemVehiclesController);
             Parent root = loader.load();
             Stage stage = new Stage();
@@ -155,8 +160,22 @@ public class SimulationController {
             stage.setScene(new Scene(root, 600, 400));
             stage.setResizable(false);
             stage.show();
-        }catch (Exception e){
+        } catch (Exception e) {
             Main.logger.log(Level.WARNING, e.getMessage());
+        }
+    }
+
+    public void searchByID(ActionEvent actionEvent) {
+        String input = searchInputField.getText();
+        if (!input.isEmpty()) {
+            try {
+                int vehicleId = Integer.parseInt(input);
+                ArrayList<Vehicle> allVehicles = Simulation.getAllVehicles();
+                Optional<Vehicle> targetVehicle = allVehicles.stream().filter(vehicle -> vehicle.getVehicleId() == vehicleId).findFirst();
+                targetVehicle.ifPresent(vehicle -> vehicleInfo.setText(vehicle.toString()));
+            } catch (Exception e) {
+                Main.logger.log(Level.WARNING, e.getMessage());
+            }
         }
     }
 }

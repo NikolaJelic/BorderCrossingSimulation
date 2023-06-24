@@ -8,11 +8,11 @@ import java.util.Random;
 public class Passenger implements Serializable {
     private static int count = 0;
     private final int passengerId;
+    private final PassengerDocumentation documentation;
     private boolean hasBaggage = false;
     private Baggage baggage = null;
-
     private boolean isDriver = false;
-    private final PassengerDocumentation documentation;
+
     public Passenger(boolean isDriver) {
         if (new Random().nextDouble() <= 0.7) {
             hasBaggage = true;
@@ -23,10 +23,18 @@ public class Passenger implements Serializable {
         passengerId = count++;
 
     }
-    public int getPassengerId(){return passengerId;}
-    public boolean isDocumentationValid(){ return documentation.isValid();}
 
-    public boolean getIsDriver(){return isDriver;}
+    public int getPassengerId() {
+        return passengerId;
+    }
+
+    public boolean isDocumentationValid() {
+        return documentation.isValid();
+    }
+
+    public boolean getIsDriver() {
+        return isDriver;
+    }
 
     public boolean checkBaggage() {
         if (hasBaggage) {
@@ -36,4 +44,8 @@ public class Passenger implements Serializable {
         }
     }
 
+    @Override
+    public String toString() {
+        return passengerId + " ";
+    }
 }

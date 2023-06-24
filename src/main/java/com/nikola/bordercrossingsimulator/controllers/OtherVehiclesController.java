@@ -12,7 +12,7 @@ public class OtherVehiclesController {
     public ListView<Label> vehicleList;
 
     public void updateList(ArrayList<Vehicle> vehicles) {
-        if(vehicleList != null){
+        if (vehicleList != null) {
             vehicleList.getItems().clear();
         }
         vehicles.forEach(vehicle -> {

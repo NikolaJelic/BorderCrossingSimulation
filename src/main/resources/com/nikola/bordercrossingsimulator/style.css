@@ -1,0 +1,83 @@
+/* SimulationController.fxml */
+
+/* AnchorPane */
+#simulationPane {
+    -fx-background-color: #F2F2F2;
+}
+
+/* Labels */
+#elapsedTime {
+    -fx-font-size: 14px;
+    -fx-text-fill: #333333;
+}
+
+/* Buttons */
+#pauseButton, #showAllButton, #finishedButton {
+    -fx-font-size: 12px;
+    -fx-background-color: #4CAF50;
+    -fx-text-fill: #FFFFFF;
+    -fx-padding: 5px 10px;
+    -fx-border-radius: 5px;
+}
+
+#pauseButton {
+    -fx-background-color: #FF5722;
+}
+
+/* ListView */
+#visibleLane {
+    -fx-background-color: #D4D4D4;
+}
+
+/* VBox */
+#policeBox, #customsBox {
+    -fx-padding: 10px;
+}
+
+/* Labels */
+#policeFirstLabel, #policeSecondLabel, #policeThirdLabel, #customsFirstLabel, #customsSecondLabel {
+    -fx-font-size: 14px;
+    -fx-text-fill: #333333;
+}
+
+/* ProblemVehiclesController.fxml */
+
+/* AnchorPane */
+#problemVehiclesPane {
+    -fx-background-color: #F2F2F2;
+}
+
+/* HBox */
+#problemVehiclesButtons {
+    -fx-spacing: 30px;
+}
+
+/* Buttons */
+#rejectedButton, #passedButton {
+    -fx-font-size: 12px;
+    -fx-background-color: #4CAF50;
+    -fx-text-fill: #FFFFFF;
+    -fx-padding: 5px 10px;
+    -fx-border-radius: 5px;
+}
+
+#passedButton {
+    -fx-background-color: #FF5722;
+}
+
+/* ListView */
+#detailsList {
+    -fx-background-color: #D4D4D4;
+}
+
+/* VehicleList.fxml */
+
+/* AnchorPane */
+#vehicleListPane {
+    -fx-background-color: #F2F2F2;
+}
+
+/* ListView */
+#vehicleList {
+    -fx-background-color: #D4D4D4;
+}

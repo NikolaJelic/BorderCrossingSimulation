@@ -31,24 +31,26 @@ public class Main extends Application {
         }
 
     }
+
+    public static void main(String[] args) {
+        launch();
+    }
+
     @Override
     public void start(Stage primaryStage) throws Exception {
 
 
-        FXMLLoader fxmlLoader = new FXMLLoader(Main.class.getResource("/com/nikola/bordercrossingsimulator/simulation.fxml"));
+        FXMLLoader fxmlLoader = new FXMLLoader(Main.class.getResource(File.separator +  "com" +File.separator + "nikola"+File.separator +"bordercrossingsimulator"+File.separator +"simulation.fxml"));
         Parent root = fxmlLoader.load();
         primaryStage.setTitle("Border Crossing");
         primaryStage.setScene(new Scene(root, 800, 600));
-        SimulationController simulationController =  fxmlLoader.getController();
-       Simulation simulationRunner = new Simulation(simulationController);
-       simulationController.setSimulationRunner(simulationRunner);
+        SimulationController simulationController = fxmlLoader.getController();
+        Simulation simulationRunner = new Simulation(simulationController);
+        simulationController.setSimulationRunner(simulationRunner);
         primaryStage.setResizable(false);
         primaryStage.show();
-    }
-
-    public static void main(String[] args) {
-        launch();
-
-
+        primaryStage.setOnCloseRequest(e -> {
+            System.exit(0);
+        });
     }
 }
