@@ -61,9 +61,7 @@
     -fx-border-radius: 5px;
 }
 
-#passedButton {
-    -fx-background-color: #FF5722;
-}
+
 
 /* ListView */
 #detailsList {
