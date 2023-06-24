@@ -4,17 +4,18 @@
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 <?import javafx.scene.text.Text?>
 
-<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="800.0" stylesheets="@assets/style.css" xmlns="http://javafx.com/javafx/20.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.nikola.bordercrossingsimulator.controllers.SimulationController">
+<AnchorPane maxHeight="400.0" maxWidth="800.0" minHeight="400.0" minWidth="800.0" prefHeight="400.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/20.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.nikola.bordercrossingsimulator.controllers.SimulationController">
    <children>
-      <VBox prefHeight="400.0" prefWidth="600.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+      <VBox minHeight="500.0" prefHeight="500.0" prefWidth="600.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
          <children>
-            <HBox prefHeight="50.0">
+            <HBox prefHeight="50.0" prefWidth="800.0">
                <children>
                   <Label text="Elapsed time:" />
                   <Label fx:id="elapsedTime" layoutX="10.0" layoutY="10.0" prefHeight="23.0" prefWidth="130.0">
@@ -32,22 +33,22 @@
                   <Insets left="20.0" top="20.0" />
                </VBox.margin>
             </HBox>
-            <HBox prefHeight="300.0" prefWidth="600.0">
+            <HBox maxWidth="800.0" minWidth="800.0" prefHeight="150.0" prefWidth="800.0">
                <VBox.margin>
                   <Insets top="50.0" />
                </VBox.margin>
                <children>
-                  <Button fx:id="showAllButton" alignment="CENTER" contentDisplay="CENTER" mnemonicParsing="false" onAction="#showAllVehicles" prefHeight="57.0" prefWidth="127.0" styleClass="bigButton" stylesheets="@assets/style.css" text="Show all vehicles" textAlignment="CENTER" wrapText="true">
+                  <Button fx:id="showAllButton" alignment="CENTER" contentDisplay="CENTER" mnemonicParsing="false" onAction="#showAllVehicles" prefHeight="57.0" prefWidth="127.0" text="Show all vehicles" textAlignment="CENTER" wrapText="true">
                      <HBox.margin>
-                        <Insets left="20.0" top="130.0" />
+                        <Insets left="20.0" top="60.0" />
                      </HBox.margin>
                      <font>
                         <Font size="10.0" />
                      </font>
                   </Button>
-                  <ListView fx:id="visibleLane" orientation="HORIZONTAL" prefHeight="100.0" prefWidth="400.0">
+                  <ListView fx:id="visibleLane" maxWidth="380.0" minWidth="380.0" orientation="HORIZONTAL" prefHeight="60.0" prefWidth="380.0">
                      <HBox.margin>
-                        <Insets left="20.0" />
+                        <Insets left="20.0" right="10.0" />
                      </HBox.margin>
                   </ListView>
                   <VBox prefHeight="200.0" prefWidth="130.0">
@@ -68,13 +69,16 @@
                      <children>
                         <Label prefHeight="30.0" prefWidth="130.0" text="Customs [1]">
                            <VBox.margin>
-                              <Insets top="70.0" />
+                              <Insets top="40.0" />
                            </VBox.margin>
                         </Label>
-                        <Label fx:id="customsFirstLabel" layoutX="10.0" layoutY="10.0" prefHeight="50.0" prefWidth="130.0" />
+                        <Label fx:id="customsFirstLabel" layoutX="10.0" layoutY="10.0" minHeight="30.0" prefHeight="50.0" prefWidth="130.0" />
                         <Label layoutX="10.0" layoutY="33.0" prefHeight="30.0" prefWidth="130.0" text="Customs [2]" />
-                        <Label fx:id="customsSecondLabel" layoutX="10.0" layoutY="56.0" prefHeight="50.0" prefWidth="130.0" />
-                        <Button fx:id="crossedButton" mnemonicParsing="false" onAction="#showCrossed" prefHeight="25.0" prefWidth="80.0" text="Crossed">
+                        <Label fx:id="customsSecondLabel" layoutX="10.0" layoutY="56.0" minHeight="30.0" prefHeight="50.0" prefWidth="130.0">
+                           <VBox.margin>
+                              <Insets bottom="10.0" />
+                           </VBox.margin></Label>
+                        <Button fx:id="finishedButton" mnemonicParsing="false" onAction="#showFinished" prefHeight="25.0" prefWidth="80.0" text="Finished">
                            <font>
                               <Font size="10.0" />
                            </font>
@@ -82,29 +86,25 @@
                               <Insets bottom="10.0" left="20.0" />
                            </VBox.margin>
                         </Button>
-                        <Button fx:id="rejectedButton" layoutX="10.0" layoutY="240.0" mnemonicParsing="false" onAction="#showRejected" prefHeight="25.0" prefWidth="80.0" text="Rejected">
-                           <font>
-                              <Font size="10.0" />
-                           </font>
-                           <VBox.margin>
-                              <Insets left="20.0" />
-                           </VBox.margin>
-                        </Button>
                      </children>
                   </VBox>
                </children>
             </HBox>
-            <VBox prefHeight="169.0" prefWidth="800.0">
+            <VBox maxWidth="800.0" minHeight="130.0" minWidth="800.0" prefHeight="130.0" prefWidth="800.0">
                <children>
                   <Label text="State on terminals:">
                      <VBox.margin>
-                        <Insets left="20.0" top="20.0" />
+                        <Insets left="20.0" top="15.0" />
                      </VBox.margin>
                   </Label>
-                  <Text fx:id="crossingLog" strokeType="OUTSIDE" strokeWidth="0.0" textAlignment="JUSTIFY" wrappingWidth="745.0">
+                  <ScrollPane prefHeight="80.0" prefWidth="775.0">
                      <VBox.margin>
-                        <Insets left="25.0" top="20.0" />
-                     </VBox.margin></Text>
+                        <Insets left="25.0" top="10.0" />
+                     </VBox.margin>
+                     <content>
+                        <Text fx:id="crossingLog" strokeType="OUTSIDE" strokeWidth="0.0" textAlignment="JUSTIFY" wrappingWidth="749.0" />
+                     </content>
+                  </ScrollPane>
                </children>
             </VBox>
          </children>

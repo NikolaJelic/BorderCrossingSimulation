@@ -2,9 +2,10 @@ package com.nikola.bordercrossingsimulator.models.passenger;
 
 import com.nikola.bordercrossingsimulator.models.transportable.Baggage;
 
+import java.io.Serializable;
 import java.util.Random;
 
-public class Passenger {
+public class Passenger implements Serializable {
     private static int count = 0;
     private final int passengerId;
     private boolean hasBaggage = false;

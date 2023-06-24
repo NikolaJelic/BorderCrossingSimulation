@@ -42,7 +42,9 @@ public class TerminalStatusWatcher extends Thread{
                         WatchEvent.Kind<?> kind = event.kind();
                         WatchEvent<Path> eventPath = (WatchEvent<Path>)event;
                         Path evPath = eventPath.context();
-                        if(kind.equals(StandardWatchEventKinds.ENTRY_MODIFY) && evPath == path){
+
+                        if(kind.equals(StandardWatchEventKinds.ENTRY_MODIFY) && evPath.equals(path.getFileName())){
+                            System.out.println("Change detected at " + evPath);
 
                             readFile(path);
                         }

@@ -10,13 +10,12 @@ import java.util.ArrayList;
 import java.util.logging.Level;
 
 public class Bus extends Vehicle{
-    public Bus(Path bannedPassengersLogPath, SimulationController simulationController) {
-        super(52, 100, TerminalCategory.PASSENGER, bannedPassengersLogPath, simulationController);
+    public Bus(Path bannedPassengersLogPath, Path vehiclesBinaryLogPath, SimulationController simulationController) {
+        super(52, 100, TerminalCategory.PASSENGER, bannedPassengersLogPath,vehiclesBinaryLogPath, simulationController);
     }
 
     @Override
     public boolean inspectCustoms() {
-        ArrayList<Passenger> rejectedPassengers = new ArrayList<>();
         boolean ret = true;
             try {
                 for(Passenger passenger : passengers){
@@ -30,7 +29,6 @@ public class Bus extends Vehicle{
                         }
                     }
                 }
-            logCrossingReport(rejectedPassengers);
             } catch (Exception e) {
                 Main.logger.log(Level.WARNING, e.fillInStackTrace().toString());
             }
@@ -38,7 +36,7 @@ public class Bus extends Vehicle{
     }
 
     @Override
-    protected String typeToString() {
+    public String typeToString() {
         return "Bus";
     }
 }

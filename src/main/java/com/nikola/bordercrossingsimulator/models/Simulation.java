@@ -31,26 +31,30 @@ public class Simulation {
     private static final AtomicBoolean finished = new AtomicBoolean(false);
     private static final CopyOnWriteArrayList<Vehicle> lane = new CopyOnWriteArrayList<>();
     private static final AtomicBoolean runState = new AtomicBoolean(true);
-    private final Path vehiclesLogPath;
+    private final Path vehiclesTextLogPath;
+    private final Path vehiclesBinaryLogPath;
+
     private final SimulationController simulationController;
     private final TerminalStatusWatcher terminalStatusWatcher;
     private Clock clock;
 
     public Simulation(SimulationController simulationController) {
         this.simulationController = simulationController;
-        vehiclesLogPath = Path.of("data" + File.separator + "vehicle_log" + System.nanoTime() + ".txt");
+        vehiclesTextLogPath = Path.of("data" + File.separator + "vehicle_text_log" + System.nanoTime() + ".txt");
+        vehiclesBinaryLogPath = Path.of("data" + File.separator + "vehicle_binary_log" + System.nanoTime() + ".txt");
 
         initTerminals();
         initVehicles();
-        Path terminalStateFilePath = Path.of("data" + File.separator + "terminals" + System.nanoTime() + ".txt");
         ArrayList<Terminal> terminals = new ArrayList<>();
         terminals.addAll(policeTerminals);
         terminals.addAll(customsTerminals);
+        Path terminalStateFilePath = Path.of("data" + File.separator + "terminals.txt");
 
         this.terminalStatusWatcher = new TerminalStatusWatcher(terminalStateFilePath, terminals);
 
     }
 
+    public Path getVehiclesTextLogPath(){return vehiclesTextLogPath;}
     public static boolean isFinished() {
         return finished.get();
     }
@@ -78,7 +82,6 @@ public class Simulation {
     public static void removeFromLane(Vehicle vehicle) {
         synchronized (lane) {
             lane.remove(vehicle);
-            System.out.println("Lane size: " + lane.size() + " removed: " + vehicle.getVehicleId() + " At position " + vehicle.getPosition());
             --endOfLane;
         }
     }
@@ -196,13 +199,13 @@ public class Simulation {
     private void initVehicles() {
 
         for (int i = 0; i < 35; ++i) {
-            lane.add(new Car(vehiclesLogPath, simulationController));
+            lane.add(new Car(vehiclesTextLogPath, vehiclesBinaryLogPath,  simulationController));
         }
         for (int i = 0; i < 10; ++i) {
-            lane.add(new Truck(vehiclesLogPath, simulationController));
+            lane.add(new Truck(vehiclesTextLogPath, vehiclesBinaryLogPath, simulationController));
         }
         for (int i = 0; i < 5; ++i) {
-            lane.add(new Bus(vehiclesLogPath, simulationController));
+            lane.add(new Bus(vehiclesTextLogPath, vehiclesBinaryLogPath, simulationController));
         }
         Collections.shuffle(lane);
         for (int i = 0; i < 50; ++i) {

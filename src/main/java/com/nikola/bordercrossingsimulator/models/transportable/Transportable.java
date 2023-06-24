@@ -1,5 +1,7 @@
 package com.nikola.bordercrossingsimulator.models.transportable;
 
-public interface Transportable {
+import java.io.Serializable;
+
+public interface Transportable extends Serializable {
     public abstract boolean canPassInspection();
 }

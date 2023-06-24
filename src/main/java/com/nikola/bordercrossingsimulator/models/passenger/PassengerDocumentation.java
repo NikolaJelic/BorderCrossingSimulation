@@ -1,8 +1,9 @@
 package com.nikola.bordercrossingsimulator.models.passenger;
 
+import java.io.Serializable;
 import java.util.Random;
 
-public class PassengerDocumentation {
+public class PassengerDocumentation implements Serializable {
     private final boolean valid;
 
     public PassengerDocumentation() {

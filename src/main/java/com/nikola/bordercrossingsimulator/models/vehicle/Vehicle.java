@@ -11,6 +11,7 @@ import javafx.application.Platform;
 import java.io.*;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Semaphore;
@@ -20,9 +21,10 @@ import static com.nikola.bordercrossingsimulator.models.Simulation.endOfLane;
 
 
 public abstract class Vehicle extends Thread implements Serializable {
-    private static final Semaphore loggingSemaphore = new Semaphore(1);
-    private static final Semaphore policeSemaphore = new Semaphore(3);
-    private static final Semaphore customsSemaphore = new Semaphore(2);
+    public static final Semaphore loggingSemaphore = new Semaphore(1);
+    private static final Semaphore binaryLoggingSemaphore = new Semaphore(1);
+
+    protected final ArrayList<Passenger> rejectedPassengers = new ArrayList<>();
 
     private static int vehicleCounter = 1;
     private final int vehicleId;
@@ -30,6 +32,7 @@ public abstract class Vehicle extends Thread implements Serializable {
     private final TerminalCategory vehicleCategory;
     protected TravelState travelState = TravelState.IN_LANE;
     private final Path bannedPassengersLogPath;
+    private final Path bannedUsersBinaryLog;
     private final int maxCapacity;
     protected final CopyOnWriteArrayList<Passenger> passengers = new CopyOnWriteArrayList<>();
     protected StringBuilder crossingLog = new StringBuilder();
@@ -39,10 +42,11 @@ public abstract class Vehicle extends Thread implements Serializable {
     private boolean isRunning = true;
 
 
-    public Vehicle(int maxCapacity, int policeWaitDuration, TerminalCategory vehicleCategory, Path bannedPassengersLogPath, SimulationController simulationController) {
+    public Vehicle(int maxCapacity, int policeWaitDuration, TerminalCategory vehicleCategory, Path bannedPassengersLogPath, Path bannedUsersBinaryLog,SimulationController simulationController) {
         this.vehicleId = vehicleCounter++;
         this.maxCapacity = maxCapacity;
         this.bannedPassengersLogPath = bannedPassengersLogPath;
+        this.bannedUsersBinaryLog = bannedUsersBinaryLog;
         this.policeWaitDuration = policeWaitDuration;
         this.vehicleCategory = vehicleCategory;
         int passengerCount = new Random().nextInt(1, maxCapacity);
@@ -61,16 +65,14 @@ public abstract class Vehicle extends Thread implements Serializable {
     @Override
     public void run(){
         while(travelState != TravelState.FINISHED && travelState != TravelState.REJECTED && !Simulation.isFinished()){
-       //     awaitCondition();
-            if(travelState == TravelState.IN_LANE){
+            awaitCondition();
+            if(travelState == TravelState.IN_LANE && position < endOfLane){
                 tryMove();
             }
-            System.out.println(typeToString() + vehicleId + ": " + travelState + " Position: " + position);
+          //  System.out.println(typeToString() + vehicleId + ": " + travelState + " Position: " + position);
             if(position == endOfLane && !Simulation.isInTerminalQueue(this)){
                 travelState = TravelState.WAITING_FOR_POLICE;
                 Simulation.addToTerminalQueue(this);
-
-
             }
             if(travelState == TravelState.WAITING_FOR_POLICE && Simulation.isInTerminalQueue(this)){
                 passPoliceTerminal();
@@ -86,6 +88,8 @@ public abstract class Vehicle extends Thread implements Serializable {
         crossingLog = new StringBuilder();
 
         if(terminal != null){
+            Platform.runLater(()->simulationController.updatePoliceTerminal(this, terminal));
+
             travelState = TravelState.UNDER_INSPECTION;
             Simulation.removeFromLane(this);
 
@@ -100,8 +104,12 @@ public abstract class Vehicle extends Thread implements Serializable {
                 travelState = TravelState.REJECTED;
                 Simulation.addToRejected(this);
             }
+            logCrossingReport(rejectedPassengers, terminal, true);
+            Platform.runLater(()-> simulationController.resetPoliceTerminal(terminal));
+            Platform.runLater(()-> simulationController.updateLog(String.valueOf(crossingLog)));
             terminal.setOccupied(false);
-            System.out.println(crossingLog);
+
+
 
         }
     }
@@ -112,6 +120,7 @@ public abstract class Vehicle extends Thread implements Serializable {
         Terminal terminal = Simulation.tryGetCustomsTerminal(this);
         crossingLog = new StringBuilder();
         if(terminal != null){
+            Platform.runLater(()->simulationController.updateCustomsTerminal(this, terminal));
             travelState = TravelState.UNDER_INSPECTION;
             crossingLog.append(typeToString()).append(" ").append(vehicleId).append(" on customs terminal [").append(terminal.getTerminalId()).append("] ");
             if(inspectCustoms()){
@@ -119,30 +128,34 @@ public abstract class Vehicle extends Thread implements Serializable {
                 passengers.forEach((passenger) ->  crossingLog.append(" ").append(passenger.getPassengerId()).append(" "));
                 crossingLog.append('\n');
                 travelState = TravelState.FINISHED;
+                Simulation.removeFromTerminalQueue(this);
                 Simulation.addToPassed(this);
 
             }else{
                 crossingLog.append("failed customs inspection.\n");
                 travelState = TravelState.REJECTED;
+                Simulation.removeFromTerminalQueue(this);
 
                 Simulation.addToRejected(this);
             }
+            logCrossingReport(rejectedPassengers, terminal, false);
+            Platform.runLater(()-> simulationController.resetCustomsTerminal(terminal));
+            Platform.runLater(()-> simulationController.updateLog(String.valueOf(crossingLog)));
             terminal.setOccupied(false);
 
-            System.out.println(crossingLog);
+
 
         }
     }
     protected abstract boolean inspectCustoms();
     private boolean inspectPolice() {
-        ArrayList<Passenger> rejectedPassengers = new ArrayList<>();
+        boolean ret = true;
         for(Passenger passenger : passengers){
             if(!passenger.isDocumentationValid()){
                 passengers.remove(passenger);
                 if(passenger.getIsDriver()){
                    travelState = TravelState.REJECTED;
-                    rejectedPassengers.add(passenger);
-                   return false;
+                   ret =  false;
                 }
                 rejectedPassengers.add(passenger);
             }
@@ -152,22 +165,60 @@ public abstract class Vehicle extends Thread implements Serializable {
                 Main.logger.log(Level.WARNING, e.getMessage());
             }
         }
-        logCrossingReport(rejectedPassengers);
-        return true;
+        logPassengersToBinaryFile(rejectedPassengers);
+        return ret;
     }
 
-    protected void logCrossingReport(ArrayList<Passenger> rejectedPassengers) {
+    protected void logPassengersToBinaryFile(ArrayList<Passenger> passengers){
+        try{
+            binaryLoggingSemaphore.acquire();
+            List<Passenger> serializedPassengers = new ArrayList<>();
+
+            try {
+                File inFile = new File(bannedUsersBinaryLog.toUri());
+                if(inFile.exists()) {
+                    FileInputStream fileIn = new FileInputStream(inFile);
+                    ObjectInputStream in = new ObjectInputStream(fileIn);
+
+                    serializedPassengers = (List<Passenger>) in.readObject();
+                    in.close();
+                    fileIn.close();
+                }
+                serializedPassengers.addAll(passengers);
+
+
+                FileOutputStream fileOut = new FileOutputStream(new File(bannedUsersBinaryLog.toUri()), false);
+                ObjectOutputStream out = new ObjectOutputStream(fileOut);
+
+                out.writeObject(serializedPassengers);
+
+                out.close();
+                fileOut.close();
+
+            } catch (Exception e) {
+                // Handle exceptions appropriately
+                e.printStackTrace();
+            }
+        }catch (Exception e){
+            Main.logger.log(Level.WARNING, e.getMessage());
+        }finally {
+            binaryLoggingSemaphore.release();
+        }
+    }
+    protected void logCrossingReport(ArrayList<Passenger> rejectedPassengers, Terminal terminal, boolean isPoliceTerminal) {
         try{
             loggingSemaphore.acquire();
             File file = new File(bannedPassengersLogPath.toUri());
             try (BufferedWriter writer = new BufferedWriter(new FileWriter(file, true))){
                 StringBuilder out = new StringBuilder();
                 if(!rejectedPassengers.isEmpty()){
-                    out.append(typeToString()).append(", ").append(vehicleId).append(", rejected [").append(travelState == TravelState.REJECTED).append("]");
+                    out.append(typeToString()).append("[").append(vehicleId).append("]");
+                    out.append((travelState == TravelState.REJECTED) ? " rejected " :  " passed ") ;
+                    out.append("at ").append((isPoliceTerminal)? "Police" : "Customs").append(" Terminal[").append(terminal.getTerminalId()).append("]");
 
-                    out.append(" With rejected passengers: ");
+                    out.append(" With removed passengers: ");
                     rejectedPassengers.forEach((passenger -> out.append(passenger.getPassengerId()).append(' ')));
-
+                    out.append('\n');
                 writer.write(out.toString());
                 writer.flush();
                 writer.close();
@@ -178,15 +229,17 @@ public abstract class Vehicle extends Thread implements Serializable {
         }catch (Exception e){
             Main.logger.log(Level.WARNING, e.getMessage());
         }
+        finally {
+            loggingSemaphore.release();
+        }
     }
 
-    protected abstract String typeToString();
+    public abstract String typeToString();
 
 
 
     private void tryMove(){
         Simulation.tryMove(this);
-     //   Platform.runLater(() ->simulationController.updateLane(this));
     }
     private void awaitCondition() {
         synchronized (passengers){

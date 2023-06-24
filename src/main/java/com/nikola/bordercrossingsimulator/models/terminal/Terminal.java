@@ -27,7 +27,9 @@ public abstract class Terminal {
         return terminalCategory;
     }
 
-    public void setStatus(boolean status){this.status.set(status); }
+    public void setStatus(boolean status){this.status.set(status);
+        System.out.println("terminal" + terminalId + " is " + status);
+    }
     public synchronized boolean getStatus(){ return status.get();}
 
     public int getTerminalId(){return  terminalId;}

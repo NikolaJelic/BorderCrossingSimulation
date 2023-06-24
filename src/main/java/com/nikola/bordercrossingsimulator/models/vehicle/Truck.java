@@ -13,8 +13,8 @@ import java.util.logging.Level;
 public class Truck extends Vehicle{
     private final Cargo cargo;
 
-    public Truck(Path bannedPassengersLogPath, SimulationController simulationController) {
-        super(3, 500, TerminalCategory.CARGO, bannedPassengersLogPath, simulationController);
+    public Truck(Path bannedPassengersLogPath, Path vehiclesBinaryLogPath, SimulationController simulationController) {
+        super(3, 500, TerminalCategory.CARGO, bannedPassengersLogPath, vehiclesBinaryLogPath, simulationController);
         cargo = new Cargo();
     }
 
@@ -28,16 +28,14 @@ public class Truck extends Vehicle{
         if(cargo.canPassInspection()){
             return true;
         }else{
-            ArrayList<Passenger> out = new ArrayList<>();
-            out.add(passengers.get(0));
-            logCrossingReport(out);
+            rejectedPassengers.add(passengers.get(0));
             return false;
         }
 
     }
 
     @Override
-    protected String typeToString() {
+    public String typeToString() {
         return "Truck";
     }
 }
