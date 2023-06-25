@@ -6,7 +6,6 @@ import javafx.scene.control.ListView;
 import javafx.scene.paint.Color;
 
 import java.util.ArrayList;
-import java.util.Collections;
 
 public class OtherVehiclesController {
     public ListView<Label> vehicleList;

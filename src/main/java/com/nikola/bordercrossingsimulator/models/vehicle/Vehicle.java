@@ -59,7 +59,6 @@ public abstract class Vehicle extends Thread implements Serializable {
     }
 
     public int getVehicleId(){return vehicleId;}
-    public TravelState getTravelState(){return travelState;}
 
     public synchronized int getPosition(){ return  position;}
     public synchronized void setPosition(int position){ this.position = position;}
@@ -224,7 +223,6 @@ public abstract class Vehicle extends Thread implements Serializable {
                     out.append('\n');
                 writer.write(out.toString());
                 writer.flush();
-                writer.close();
                 }
             } catch (IOException e) {
                 throw new RuntimeException(e);

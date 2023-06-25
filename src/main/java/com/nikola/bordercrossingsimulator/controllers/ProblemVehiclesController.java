@@ -1,7 +1,6 @@
 package com.nikola.bordercrossingsimulator.controllers;
 
 import com.nikola.bordercrossingsimulator.Main;
-import com.nikola.bordercrossingsimulator.models.Simulation;
 import com.nikola.bordercrossingsimulator.models.vehicle.Vehicle;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -9,12 +8,10 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 
-import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.stream.Stream;
