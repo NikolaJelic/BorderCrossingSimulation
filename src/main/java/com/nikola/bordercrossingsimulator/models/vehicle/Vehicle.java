@@ -51,7 +51,7 @@ public abstract class Vehicle extends Thread implements Serializable {
         this.bannedUsersBinaryLog = bannedUsersBinaryLog;
         this.policeWaitDuration = policeWaitDuration;
         this.vehicleCategory = vehicleCategory;
-        int passengerCount = new Random().nextInt(1, maxCapacity);
+        int passengerCount = new Random().nextInt( maxCapacity) + 1;
         for (int i = 0; i < passengerCount; ++i) {
             passengers.add(new Passenger(i == 0));
         }
